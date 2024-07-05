@@ -29,6 +29,7 @@ def get_dc_fields(file_path):
             ### RUN SQL TO GET DIFFERENT TYPES
                     
             dc_fields.append(("dc:type","Other"))
+            # dc_fields.append(("dc:type","Book"))
 
             for field in record.get_fields('260'):
                 dc_fields.append(("dc:publisher", field['a']))
@@ -39,8 +40,6 @@ def get_dc_fields(file_path):
             for field in record.get_fields('505'):
                 for subfield in field.get_subfields('a'):
                     dc_fields.append(("dc:description", subfield))
-                # for subfield in field.get_subfields('t'):
-                #     dc_fields.append(('dc:description', subfield))
 
             for field in record.get_fields('650'):
                 dc_fields.append(("dc:subject", field['a']))
@@ -55,9 +54,7 @@ def get_dc_fields(file_path):
 def create_dc_tree(dc_fields, identifier):
     '''
     creates XML tree with dc fields
-    takes:
-        dc_fields (list)
-        identifier (str)
+    takes in dc_fields (list) and identifier (str)
     returns root element of the XML tree.
     '''
     root = ET.Element("record")
@@ -87,13 +84,9 @@ def create_dc_tree(dc_fields, identifier):
 def write_pretty_xml(root, output_path):
     '''
     writes the XML tree to a file with pretty printing
-    takes:
-        root (Element)
-        output_path (str)
+    takes in root (Element) and output_path (str)
     '''
-    # tree = ET.ElementTree(root)
-    # tree.write(output_path, encoding='utf-8', xml_declaration=True)
-
+    
     # ET.tostring serializes the root element and its children to a byte string using utf-8 encoding
     # .decode converts the byte string to a regular string
     xml_str = ET.tostring(root, encoding='utf-8').decode('utf-8')
