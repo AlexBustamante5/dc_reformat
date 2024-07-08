@@ -25,11 +25,10 @@ def get_dc_fields(file_path):
                 for value in subfield_a:
                     dc_fields.append(("dc:creator", value))
 
-            #hard code type
-            ### RUN SQL TO GET DIFFERENT TYPES
+            # HARD CODED
+            ### RUN SQL TO GET ONLY BOOK TYPES 952c, 942c
                     
             dc_fields.append(("dc:type","Other"))
-            # dc_fields.append(("dc:type","Book"))
 
             for field in record.get_fields('260'):
                 dc_fields.append(("dc:publisher", field['a']))
@@ -54,18 +53,25 @@ def get_dc_fields(file_path):
 def create_dc_tree(dc_fields, identifier):
     '''
     creates XML tree with dc fields
-    takes in dc_fields (list) and identifier (str)
+    takes:
+        dc_fields (list)
+        identifier (str)
     returns root element of the XML tree.
     '''
+    # creates root
     root = ET.Element("record")
 
-    sub_1 = ET.SubElement(root, "header")
+    # creates header sub elem
+    header = ET.SubElement(root, "header")
 
-    sub_2 = ET.SubElement(sub_1, "identifier")
-    sub_2.text = identifier
+    # creates id sub elem and adds id text
+    id_elem = ET.SubElement(header, "identifier")
+    id_elem.text = identifier
 
-    sub_3 = ET.SubElement(root, "metadata")
+    # creates metadata subelem
+    metadata = ET.SubElement(root, "metadata")
 
+    # defines namespaces to avoid naming conflicts
     namespaces = {
     "xmlns:oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/",
     "xmlns:dc": "http://purl.org/dc/elements/1.1/",
@@ -73,10 +79,12 @@ def create_dc_tree(dc_fields, identifier):
     "xsi:schemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
     }
 
-    sub_4 = ET.SubElement(sub_3, "oai_dc:dc", namespaces)
+    # adds namespaces to sub elem
+    dc_elem = ET.SubElement(metadata, "oai_dc:dc", namespaces)
 
+    # adds dc fields sub elems and texts
     for tag, value in dc_fields:
-        field_element = ET.SubElement(sub_4, tag)
+        field_element = ET.SubElement(dc_elem, tag)
         field_element.text = value
     
     return root
@@ -84,14 +92,16 @@ def create_dc_tree(dc_fields, identifier):
 def write_pretty_xml(root, output_path):
     '''
     writes the XML tree to a file with pretty printing
-    takes in root (Element) and output_path (str)
+    takes:
+        root (Element)
+        output_path (str)
     '''
-    
     # ET.tostring serializes the root element and its children to a byte string using utf-8 encoding
     # .decode converts the byte string to a regular string
     xml_str = ET.tostring(root, encoding='utf-8').decode('utf-8')
 
     # minidom.parseString(xml_str) takes the XML string and parses it into a DOM structure
+    # DOM structure: https://learn.microsoft.com/en-us/dotnet/standard/data/xml/xml-document-object-model-dom
     pretty_xml_str = minidom.parseString(xml_str).toprettyxml(indent="    ", newl='\n', encoding=None)
 
     # remove the XML declaration
@@ -107,6 +117,7 @@ def reformat(input_path, output_path):
     write_pretty_xml(root, output_path)
 
 def main():
+    # paths
     input_folder = 
     output_folder = 
 
