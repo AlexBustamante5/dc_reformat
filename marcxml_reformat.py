@@ -1,5 +1,9 @@
+# python3 reformat.py non_dupes_records reformat_records
+
 import os
 import xml.etree.ElementTree as ET
+import argparse
+import argparse
 from pymarc import parse_xml_to_array
 from xml.dom import minidom
 
@@ -25,10 +29,8 @@ def get_dc_fields(file_path):
                 for value in subfield_a:
                     dc_fields.append(("dc:creator", value))
 
-            # HARD CODED
-            ### RUN SQL TO GET ONLY BOOK TYPES 952c, 942c
-                    
-            dc_fields.append(("dc:type","Other"))
+            #hard code type
+            dc_fields.append(("dc:type","Book"))
 
             for field in record.get_fields('260'):
                 dc_fields.append(("dc:publisher", field['a']))
@@ -45,7 +47,7 @@ def get_dc_fields(file_path):
 
             for field in record.get_fields('999'):
                 if 'c' in field:
-                    identifier = "https://ilob-olbi.juliencouturecentre.ca:8888/cgi-bin/koha/catalogue/detail.pl?biblionumber=" + field['c']
+                    identifier = "https://ilob-olbi.juliencouturecentre.ca/cgi-bin/koha/opac-detail.pl?biblionumber=" + field['c']
                     dc_fields.append(("dc:identifier", identifier))
     
     return dc_fields, identifier
@@ -58,20 +60,15 @@ def create_dc_tree(dc_fields, identifier):
         identifier (str)
     returns root element of the XML tree.
     '''
-    # creates root
     root = ET.Element("record")
 
-    # creates header sub elem
-    header = ET.SubElement(root, "header")
+    sub_1 = ET.SubElement(root, "header")
 
-    # creates id sub elem and adds id text
-    id_elem = ET.SubElement(header, "identifier")
-    id_elem.text = identifier
+    sub_2 = ET.SubElement(sub_1, "identifier")
+    sub_2.text = identifier
 
-    # creates metadata subelem
-    metadata = ET.SubElement(root, "metadata")
+    sub_3 = ET.SubElement(root, "metadata")
 
-    # defines namespaces to avoid naming conflicts
     namespaces = {
     "xmlns:oai_dc": "http://www.openarchives.org/OAI/2.0/oai_dc/",
     "xmlns:dc": "http://purl.org/dc/elements/1.1/",
@@ -79,12 +76,10 @@ def create_dc_tree(dc_fields, identifier):
     "xsi:schemaLocation": "http://www.openarchives.org/OAI/2.0/oai_dc/ http://www.openarchives.org/OAI/2.0/oai_dc.xsd"
     }
 
-    # adds namespaces to sub elem
-    dc_elem = ET.SubElement(metadata, "oai_dc:dc", namespaces)
+    sub_4 = ET.SubElement(sub_3, "oai_dc:dc", namespaces)
 
-    # adds dc fields sub elems and texts
     for tag, value in dc_fields:
-        field_element = ET.SubElement(dc_elem, tag)
+        field_element = ET.SubElement(sub_4, tag)
         field_element.text = value
     
     return root
@@ -96,12 +91,14 @@ def write_pretty_xml(root, output_path):
         root (Element)
         output_path (str)
     '''
+    # tree = ET.ElementTree(root)
+    # tree.write(output_path, encoding='utf-8', xml_declaration=True)
+
     # ET.tostring serializes the root element and its children to a byte string using utf-8 encoding
     # .decode converts the byte string to a regular string
     xml_str = ET.tostring(root, encoding='utf-8').decode('utf-8')
 
     # minidom.parseString(xml_str) takes the XML string and parses it into a DOM structure
-    # DOM structure: https://learn.microsoft.com/en-us/dotnet/standard/data/xml/xml-document-object-model-dom
     pretty_xml_str = minidom.parseString(xml_str).toprettyxml(indent="    ", newl='\n', encoding=None)
 
     # remove the XML declaration
@@ -116,10 +113,7 @@ def reformat(input_path, output_path):
     root = create_dc_tree(dc_fields, identifier)
     write_pretty_xml(root, output_path)
 
-def main():
-    # paths
-    input_folder = 
-    output_folder = 
+def main(input_folder, output_folder):
 
     os.makedirs(output_folder, exist_ok=True)
     
@@ -136,4 +130,9 @@ def main():
                 continue
 
 if __name__ == "__main__":
-    main()
+    parser = argparse.ArgumentParser(description='Process MARCXML records and reformats it into Dublin Core with added fields.')
+    parser.add_argument('input_folder', help='Path to the input record files')
+    parser.add_argument('output_folder', help='Directory to save the reformated record files')
+    args = parser.parse_args()
+
+    main(args.input_folder, args.output_folder)
