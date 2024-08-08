@@ -1,0 +1,17 @@
+Order and how to run the code:
+
+Step 1: export records from koha in marcxml format and save to input folder
+        be careful to export only Books
+        when exporting other record types, ensure to hard code the type in reformat.py
+
+Step 2: run makefile.py to break big marcxml into individual records
+        individual records are saved to non_dupes_records folder
+
+Step 3: run findupe.py to separate duplicates from non-duplicates
+        duplicates are saved to dupes_records folder while non-duplicates remain in non_dupes_records
+        read through dupe_info_file.txt for double checking
+
+Step 4: run reformat.py to reformat non-duplicates records
+        reformatted records are saved to reformat_records and are ready to be sent for ingestion by OMNI
+
+Step 5: save all folders to local disk before clearing workspace and working with another batch
